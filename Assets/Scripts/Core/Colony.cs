@@ -14,6 +14,7 @@ namespace ShadowLineProtocol
 
         public readonly List<Building> Buildings = new List<Building>();
         public readonly List<Colonist> Colonists = new List<Colonist>();
+        public readonly GearLocker Gear = new GearLocker();
 
         public float Battery { get; private set; } = 150f;
         public float PowerGeneration { get; private set; }
@@ -74,7 +75,10 @@ namespace ShadowLineProtocol
             Battery = Mathf.Clamp(Battery + (generation - demand) * dt, 0f, BatteryCapacity);
             Brownout = Battery <= 0f && generation < demand;
 
-            OxygenUsePerSecond = Colonists.Count * OxygenPerColonist + (Brownout ? BrownoutOxygenLeak : 0f);
+            // Crew out on a mission breathe from their suits, not the colony.
+            int breathing = 0;
+            foreach (var c in Colonists) if (!c.OnMission) breathing++;
+            OxygenUsePerSecond = breathing * OxygenPerColonist + (Brownout ? BrownoutOxygenLeak : 0f);
             Add(ResourceType.Oxygen, -OxygenUsePerSecond * dt);
         }
     }

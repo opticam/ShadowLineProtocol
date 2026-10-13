@@ -17,14 +17,21 @@ namespace ShadowLineProtocol
             public Func<bool> IsMet;
             public Action OnMet;
             public bool Done;
+            // Resolved, but badly. Still counts as done so the run can continue.
+            public bool Failed;
         }
 
         public readonly List<Objective> Objectives = new List<Objective>();
         public Objective Current => Objectives.Find(o => !o.Done);
 
+        public static Era1Objectives Instance { get; private set; }
+
         GameObject cargoPod;
+        bool? cargoPodRecovered;
         int nightsSurvived;
         bool brownoutTonight;
+
+        void Awake() => Instance = this;
 
         public void Init(GameObject cargoPod)
         {
@@ -35,9 +42,9 @@ namespace ShadowLineProtocol
             Objectives.Add(new Objective
             {
                 Title = "Landfall: recover the stray cargo pod",
-                Detail = "A cargo pod bounced off course on landing. Send a colonist to the orange crate.",
-                IsMet = () => AnyColonistWithin(this.cargoPod.transform.position, 3f),
-                OnMet = RecoverPod,
+                Detail = "A cargo pod bounced off course on landing. Click the orange crate to plan a recovery mission.",
+                IsMet = () => cargoPodRecovered.HasValue,
+                OnMet = ClearCargoPod,
             });
             Objectives.Add(new Objective
             {
@@ -92,13 +99,18 @@ namespace ShadowLineProtocol
                 if (objective.Done || !objective.IsMet()) continue;
                 objective.Done = true;
                 objective.OnMet?.Invoke();
-                HUD.Instance.Toast("Objective complete: " + objective.Title);
+                HUD.Instance.Toast(objective.Failed ? "Objective failed: " + objective.Title : "Objective complete: " + objective.Title);
             }
 
             var colony = Colony.Instance;
             if (!DayNightCycle.Instance.IsDay && colony.Brownout) brownoutTonight = true;
 
-            if (Objectives.TrueForAll(o => o.Done))
+            if (colony.Colonists.Count == 0)
+            {
+                game.End(false, "The colony is lost",
+                    "Nobody is left at Shackleton.\n\nOn missions, carry downed crew back to the staging zone before their suits fail, and bring patches and oxygen.");
+            }
+            else if (Objectives.TrueForAll(o => o.Done))
             {
                 game.End(true, "Sponsor Review passed",
                     "Oxygen production is online and Earth keeps your launch priority.\n\n" +
@@ -117,11 +129,13 @@ namespace ShadowLineProtocol
             }
         }
 
-        void RecoverPod()
+        // Called by the mission debrief. Rewards are paid by the mission itself.
+        public void ResolveCargoPod(bool recovered) => cargoPodRecovered = recovered;
+
+        void ClearCargoPod()
         {
-            Colony.Instance.Add(ResourceType.Regolith, 60);
-            Colony.Instance.Add(ResourceType.Ice, 20);
-            Destroy(cargoPod);
+            if (cargoPodRecovered == false) Objectives[0].Failed = true;
+            if (cargoPod != null) Destroy(cargoPod);
         }
 
         void OnBuildingCompleted(Building building)
@@ -140,16 +154,5 @@ namespace ShadowLineProtocol
 
         static bool HasCompleted(BuildingType type) =>
             Colony.Instance.Buildings.Exists(b => b.Def.Type == type && b.IsComplete);
-
-        static bool AnyColonistWithin(Vector3 position, float distance)
-        {
-            foreach (var c in Colony.Instance.Colonists)
-            {
-                Vector3 delta = c.transform.position - position;
-                delta.y = 0f;
-                if (delta.magnitude <= distance) return true;
-            }
-            return false;
-        }
     }
 }

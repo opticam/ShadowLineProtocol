@@ -42,6 +42,15 @@ namespace ShadowLineProtocol
 
         public void Init(Camera cam) => this.cam = cam;
 
+        // Disabled while a mission runs.
+        void OnDisable()
+        {
+            CloseMenu();
+            SetHovered(null);
+            dragging = false;
+            ClearSelection();
+        }
+
         void Update()
         {
             if (Era1Game.Instance.IsOver)
@@ -116,6 +125,7 @@ namespace ShadowLineProtocol
             var rect = Rect.MinMaxRect(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y), Mathf.Max(a.x, b.x), Mathf.Max(a.y, b.y));
             foreach (var c in Colony.Instance.Colonists)
             {
+                if (c.OnMission) continue;
                 Vector3 screen = cam.WorldToScreenPoint(c.transform.position + Vector3.up);
                 if (screen.z > 0f && rect.Contains(screen) && !c.Selected) Add(c);
             }
@@ -205,8 +215,7 @@ namespace ShadowLineProtocol
             }
             if (target != null && target.Kind == SelectableKind.CargoPod)
             {
-                Vector3 pod = target.transform.position;
-                Order(crew, c => c.MoveTo(pod), "recovering the cargo pod");
+                MissionDirector.Instance.OpenReadyRoom(crew);
                 return;
             }
 
@@ -235,10 +244,7 @@ namespace ShadowLineProtocol
                 AddOption("Build nearest foundation", () => Order(crew, BuildNearest, "building"));
             var pod = Selectable.All.FirstOrDefault(s => s.Kind == SelectableKind.CargoPod);
             if (pod != null)
-            {
-                Vector3 podPosition = pod.transform.position;
-                AddOption("Recover the cargo pod", () => Order(crew, c => c.MoveTo(podPosition), "recovering the cargo pod"));
-            }
+                AddOption("Plan the cargo pod recovery mission", () => MissionDirector.Instance.OpenReadyRoom(crew));
             AddOption("Stop", () => Order(crew, c => c.Stop(), "stopped"));
         }
 
@@ -257,14 +263,17 @@ namespace ShadowLineProtocol
 
         void OpenCargoPodMenu(Transform pod, Vector2 mouse)
         {
-            Vector3 position = pod.position;
-            BeginMenu("Stray cargo pod", "Bounced off course on landing. Recover it for 60 regolith and 20 ice.", mouse);
-            AddCrewOptions("Recover", position, c => c.MoveTo(position), "recovering the cargo pod");
+            var crew = Selected.ToList();
+            BeginMenu("Stray cargo pod",
+                "Bounced off course on landing: hatch jammed, a tank venting. Recovering it is a turn-based mission. " +
+                "Pick the team and their gear in the ready room.", mouse);
+            AddOption(crew.Count > 0 ? $"Plan recovery mission with {Names(crew)}" : "Plan recovery mission (ready room)",
+                () => MissionDirector.Instance.OpenReadyRoom(crew));
         }
 
         void AddCrewOptions(string verb, Vector3 target, Action<Colonist> order, string doing)
         {
-            var all = Colony.Instance.Colonists.ToList();
+            var all = Colony.Instance.Colonists.Where(c => !c.OnMission).ToList();
             var crew = Selected.ToList();
             if (crew.Count > 0)
                 AddOption($"{verb} with {Names(crew)}", () => Order(crew, order, doing));

@@ -22,9 +22,9 @@ You've landed near Shackleton crater with three colonists, a lander and limited 
 | Q / E | Rotate the camera |
 | Mouse wheel | Zoom |
 | Hover | Outlines what's under the cursor (yellow); selected colonists are outlined green |
-| Left-click a colonist, deposit, foundation or cargo pod | Opens an action menu (mine, build, recover, stop) |
+| Left-click a colonist, deposit, foundation or cargo pod | Opens an action menu (mine, build, plan a mission, stop) |
 | Left-click / drag on the ground | Select colonists by dragging a box (Shift adds to the selection) |
-| Right-click | Shortcut: move, mine a deposit, or build a foundation with the selected colonists |
+| Right-click | Shortcut: move, mine a deposit, build a foundation, or plan the cargo pod mission with the selected colonists |
 | 1-4 | Place Habitat, Solar Array, Comms Tower, Oxygen Plant |
 | R | Rotate while placing |
 | Esc / right-click | Cancel placing |
@@ -37,9 +37,29 @@ You've landed near Shackleton crater with three colonists, a lander and limited 
 - **Oxygen:** the crew uses oxygen all the time. The Oxygen Plant turns 1 ice into 2 oxygen every 2 seconds.
 - **Day/night:** a sol is 150 s of daylight and 60 s of night. The sun circles low around the horizon, as it does at the pole.
 
-**Objectives:** recover the stray cargo pod, build a Habitat, a Solar Array and a Comms Tower, survive the first night, build an Oxygen Plant, then produce 60 oxygen before Sol 3 ends.
+**Objectives:** recover the stray cargo pod (a turn-based mission, see below), build a Habitat, a Solar Array and a Comms Tower, survive the first night, build an Oxygen Plant, then produce 60 oxygen before Sol 3 ends.
 
-**You lose if** oxygen runs out or Sol 3 ends before the target is met.
+**You lose if** oxygen runs out, Sol 3 ends before the target is met, or every colonist is lost.
+
+## Missions
+
+Clicking the stray cargo pod opens a mission instead of a simple walk-over:
+
+1. **Ready room.** The view zooms into the lander airlock (or the habitat once one is built). Assign up to 3 crew. On foot, that's the limit. Give each one a suit, two tools and one consumable from the colony's gear locker. Injured crew and crew at their dose limit can't go.
+2. **Transit.** The team walks to the site. The colony runs at 6x speed for the 20 s of colony time the walk takes, and everyone else keeps working. Walking also costs each person 2 suit oxygen and 4 mSv of dose.
+3. **Tactical map.** Turn-based, with the colony clock paused. Each crew member has 2 actions per turn: move (4 cells, or 2 when hauling something heavy), leap up to 3 cells over obstacles (+1 oxygen), or use a context action (pry, seal, pick up, carry, patch, refill, scan). Every turn costs 1 oxygen.
+4. **Debrief.** The mission ends when the cargo pallet reaches the staging zone, turn 12 runs out, the cargo is destroyed, or nobody is left standing. You can also withdraw once everyone standing is in the staging zone. The results are applied to the colony, then the survivors walk home: another 20 s of colony time.
+
+**The cargo pod mission:** the hatch is jammed, a tank vents at the end of turns 3 and 6 and ruptures on turn 9, and the crater rim's shadow sweeps across the site from turn 5 (cold costs suit integrity, sunlight adds dose). Downed crew have 3 turns: patch them, refill their oxygen, or carry them to the staging zone. Each colonist has a perk: Mateo hauls heavy loads at full speed, Hana pries and seals without tools, and Amara can scan for supply crates. Crew lost on a mission are gone for good.
+
+| Tactical control | Action |
+| --- | --- |
+| Left-click a crew member / 1-3 / Tab | Select |
+| Left-click a blue cell | Move there |
+| L, then left-click a purple cell | Leap |
+| Action panel (bottom right) | Context actions |
+| Space / Enter | End turn |
+| WASD, Q/E, mouse wheel | Pan, rotate 90°, zoom |
 
 ## Code layout
 
@@ -53,6 +73,7 @@ You've landed near Shackleton crater with three colonists, a lander and limited 
 | `Scripts/Input` | `SelectionManager` |
 | `Scripts/Camera` | `RTSCamera` |
 | `Scripts/UI` | `HUD` (IMGUI) |
+| `Scripts/Missions` | `MissionDirector` (phase flow, transit, debrief), `ReadyRoom` (squad and loadout), `TacticalMission` (turn-based map: setup, `.Rules`, `.UI`), `TacticalGrid`, `TacticalUnit`, `Gear` (gear and locker), `MissionTypes`, `UiKit` |
 
 **Swapping in real art later:** replace the primitives in `Cutouts.BuildingVisual` and `WorldBuilder.CreateColonist`/`CreateDeposit` with prefab instantiation.
 

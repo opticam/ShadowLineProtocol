@@ -248,6 +248,16 @@ Missions are turn-based, as in XCOM, and most can be solved without fighting. Co
 - Bleed-out: a downed crew member has a few turns before their suit fails. Getting them to the airlock or a medic is a core loop.
 - Suit integrity, oxygen and dose are per-mission resources, alongside health.
 
+**Mission flow**
+
+1. **Trigger.** An event appears on the colony map. Selecting it opens the mission.
+2. **Ready room.** A zoomed-in view of the hab's ready room (the lander airlock before a hab exists). Choose who goes and what each person carries: a suit (oxygen vs. integrity), two tools and one consumable, drawn from the colony's shared gear locker. Gear taken on a mission can be used up or lost with its wearer. Injured crew and crew at their dose limit stay home. Squad size depends on transport.
+3. **Transit.** Walk, or drive once vehicles are unlocked. The colony clock pauses during the mission but advances by the travel time each way, so distant sites cost the colony more. Walking costs suit oxygen and dose before the mission starts.
+4. **Turn-based encounter.** Two actions per person per turn. Each person's crew perk matters: a hauler moves heavy loads, an engineer fixes things without tools, a prospector scans. Hard problems are built so two people working together can solve what one can't, like forcing a hatch together or carrying a downed teammate home. Each mission has a turn limit tied to something in the story (the shadow line arriving, a tank about to rupture, suit reserves). It ends when that limit runs out, everyone is down, or the objectives succeed or fail. The team can also withdraw from the staging zone.
+5. **Debrief.** Results flow back into the colony: resources, gear spent and found, dose, injuries, and permanent losses. A failed objective changes the story rather than ending the run.
+
+The playable sketch implements this end to end for the Era 1 cargo pod recovery. See the README.
+
 **Joint missions.** Missions with other colonies change with your relationship level.
 
 | Relationship | Joint missions | Their team members |

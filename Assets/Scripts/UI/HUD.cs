@@ -95,7 +95,11 @@ namespace ShadowLineProtocol
             }
 
             foreach (var c in Colony.Instance.Colonists)
-                WorldLabel(cam, c.transform.position + Vector3.up * 2.5f, c.ShortName, c.Selected ? new Color(0.4f, 1f, 0.5f) : Color.white);
+            {
+                if (c.OnMission) continue;
+                string name = c.IsInjured ? c.ShortName + " (injured)" : c.ShortName;
+                WorldLabel(cam, c.transform.position + Vector3.up * 2.5f, name, c.Selected ? new Color(0.4f, 1f, 0.5f) : Color.white);
+            }
         }
 
         void WorldLabel(Camera cam, Vector3 worldPosition, string content, Color color)
@@ -144,7 +148,8 @@ namespace ShadowLineProtocol
             var current = objectives.Current;
             foreach (var o in objectives.Objectives)
             {
-                if (o.Done) GUILayout.Label($"<color=#77dd77>[x] {o.Title}</color>", wrap);
+                if (o.Failed) GUILayout.Label($"<color=#ff8866>[!] {o.Title} (failed)</color>", wrap);
+                else if (o.Done) GUILayout.Label($"<color=#77dd77>[x] {o.Title}</color>", wrap);
                 else if (o == current) GUILayout.Label($"<color=#ffd966>[  ] {o.Title}</color>", wrap);
                 else GUILayout.Label($"<color=#bbbbbb>[  ] {o.Title}</color>", wrap);
             }

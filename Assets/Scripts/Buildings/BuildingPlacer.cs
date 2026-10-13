@@ -24,6 +24,9 @@ namespace ShadowLineProtocol
 
         public void Init(Camera cam) => this.cam = cam;
 
+        // Disabled while a mission runs.
+        void OnDisable() => Cancel();
+
         public void Begin(BuildingDef def)
         {
             if (Era1Game.Instance.IsOver) return;

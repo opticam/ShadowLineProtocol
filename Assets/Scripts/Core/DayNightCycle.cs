@@ -21,6 +21,7 @@ namespace ShadowLineProtocol
         Light sun;
         float phase;
         float daylight01 = 1f;
+        bool overridden;
 
         void Awake() => Instance = this;
 
@@ -30,8 +31,24 @@ namespace ShadowLineProtocol
             ApplyLighting();
         }
 
+        // Mission scenes (ready room, tactical map) set their own lighting while the colony clock is paused.
+        public void OverrideLighting(Quaternion sunRotation, float intensity, Color ambient)
+        {
+            overridden = true;
+            sun.transform.rotation = sunRotation;
+            sun.intensity = intensity;
+            RenderSettings.ambientLight = ambient;
+        }
+
+        public void ClearOverride()
+        {
+            overridden = false;
+            ApplyLighting();
+        }
+
         void Update()
         {
+            if (overridden) return;
             phase += Time.deltaTime;
             if (phase >= DayLength + NightLength)
             {

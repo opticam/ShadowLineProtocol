@@ -42,6 +42,7 @@ namespace ShadowLineProtocol
             gameObject.AddComponent<BuildingPlacer>().Init(cam);
             gameObject.AddComponent<HUD>();
             gameObject.AddComponent<Era1Objectives>().Init(cargoPod);
+            gameObject.AddComponent<MissionDirector>().Init(cam, cargoPod);
         }
 
         public void End(bool won, string title, string message)

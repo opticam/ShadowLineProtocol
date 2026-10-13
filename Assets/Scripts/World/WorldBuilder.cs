@@ -23,9 +23,9 @@ namespace ShadowLineProtocol
             foreach (var offset in new[] { new Vector3(-5f, 0f, -5f), new Vector3(2f, 0f, 3f), new Vector3(6f, 0f, -5f), new Vector3(-2f, 0f, 7f) })
                 CreateDeposit(root, ResourceType.Ice, CraterCenter + offset, 80);
 
-            CreateColonist(root, "Mateo Ferreira", "Mateo", "Regolith feedstock", new Color(0.95f, 0.55f, 0.15f), new Vector3(-3f, 0f, -5f));
-            CreateColonist(root, "Hana Novak", "Hana", "Habitat construction", new Color(0.35f, 0.8f, 0.4f), new Vector3(0f, 0f, -5.5f));
-            CreateColonist(root, "Dr. Amara Okonkwo-Reyes", "Amara", "Ice prospecting", new Color(0.3f, 0.75f, 0.95f), new Vector3(3f, 0f, -5f));
+            CreateColonist(root, "Mateo Ferreira", "Mateo", "Regolith feedstock", CrewRole.Hauler, new Color(0.95f, 0.55f, 0.15f), new Vector3(-3f, 0f, -5f));
+            CreateColonist(root, "Hana Novak", "Hana", "Habitat construction", CrewRole.Engineer, new Color(0.35f, 0.8f, 0.4f), new Vector3(0f, 0f, -5.5f));
+            CreateColonist(root, "Dr. Amara Okonkwo-Reyes", "Amara", "Ice prospecting", CrewRole.Prospector, new Color(0.3f, 0.75f, 0.95f), new Vector3(3f, 0f, -5f));
 
             return CreateCargoPod(root);
         }
@@ -88,7 +88,7 @@ namespace ShadowLineProtocol
             go.AddComponent<ResourceNode>().Init(type, amount, type == ResourceType.Ice ? 0.9f : 1.2f);
         }
 
-        static void CreateColonist(Transform root, string fullName, string shortName, string specialty, Color accent, Vector3 position)
+        static void CreateColonist(Transform root, string fullName, string shortName, string specialty, CrewRole role, Color accent, Vector3 position)
         {
             var go = new GameObject(fullName);
             go.transform.SetParent(root, false);
@@ -108,7 +108,7 @@ namespace ShadowLineProtocol
 
             // Square footprint so the click box covers the board whichever way it faces.
             go.AddComponent<Selectable>().Init(SelectableKind.Colonist, new Vector3(0f, 1.15f, 0f), new Vector3(1.1f, 2.4f, 1.1f));
-            go.AddComponent<Colonist>().Init(fullName, shortName, specialty, board, ring, carry);
+            go.AddComponent<Colonist>().Init(fullName, shortName, specialty, role, accent, board, ring, carry);
         }
 
         static GameObject CreateCargoPod(Transform root)
